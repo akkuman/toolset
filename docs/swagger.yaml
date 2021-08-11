@@ -12,12 +12,16 @@ definitions:
   model.ShellcodeRunner:
     properties:
       regen:
+        description: ReGen Whether to regenerate the loader, if true, it will remove
+          cache, this may be beneficial for bypass AV
         example: true
         type: boolean
       shellcode:
+        description: Shellcode This is a base64 encoded shellcode
         example: MTIzemN4
         type: string
       x64:
+        description: X64 Whether the shellcode is x64
         example: false
         type: boolean
     type: object
@@ -41,10 +45,10 @@ paths:
       - application/json
       description: Generate Runner according to shellcode provided by the user
       parameters:
-      - description: shellcode
+      - description: the param to generate shellcode runner
         format: base64
         in: body
-        name: shellcode
+        name: runner
         required: true
         schema:
           $ref: '#/definitions/model.ShellcodeRunner'

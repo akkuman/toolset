@@ -50,8 +50,8 @@ var doc = `{
                 "parameters": [
                     {
                         "format": "base64",
-                        "description": "shellcode",
-                        "name": "shellcode",
+                        "description": "the param to generate shellcode runner",
+                        "name": "runner",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -100,14 +100,17 @@ var doc = `{
             "type": "object",
             "properties": {
                 "regen": {
+                    "description": "ReGen Whether to regenerate the loader, if true, it will remove cache, this may be beneficial for bypass AV",
                     "type": "boolean",
                     "example": true
                 },
                 "shellcode": {
+                    "description": "Shellcode This is a base64 encoded shellcode",
                     "type": "string",
                     "example": "MTIzemN4"
                 },
                 "x64": {
+                    "description": "X64 Whether the shellcode is x64",
                     "type": "boolean",
                     "example": false
                 }
