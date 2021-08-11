@@ -17,7 +17,7 @@ import (
 // @Accept json
 // @Produce octet-stream
 // @Produce json
-// @Param runner body model.ShellcodeRunner true "the param to generate shellcode runner" Format(base64)
+// @Param runner body model.ShellcodeRunner true "the param to generate shellcode runner" Format(object)
 // @Success 200 {file} binary "shellcode runner"
 // @Failure 400 {object} httputil.HTTPError
 // @Failure 500 {object} httputil.HTTPError
