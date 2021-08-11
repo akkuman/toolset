@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+    toolset:
+      build:
+        context: .
+        dockerfile: ./Dockerfile
+      image: toolset:latest
+      ports:
+        - "8080:8080" # 暴露后端

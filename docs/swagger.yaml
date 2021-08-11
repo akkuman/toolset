@@ -1,0 +1,70 @@
+basePath: /api/v1
+definitions:
+  httputil.HTTPError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: status bad request
+        type: string
+    type: object
+  model.ShellcodeRunner:
+    properties:
+      regen:
+        example: true
+        type: boolean
+      shellcode:
+        example: MTIzemN4
+        type: string
+      x64:
+        example: false
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This a toolset server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: ToolSet API
+  version: "1.0"
+paths:
+  /loader/shellcode-runner:
+    post:
+      consumes:
+      - application/json
+      description: Generate Runner according to shellcode provided by the user
+      parameters:
+      - description: shellcode
+        format: base64
+        in: body
+        name: shellcode
+        required: true
+        schema:
+          $ref: '#/definitions/model.ShellcodeRunner'
+      produces:
+      - application/octet-stream
+      - application/json
+      responses:
+        "200":
+          description: shellcode runner
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+      summary: generate a shellcode runner
+      tags:
+      - loader
+swagger: "2.0"

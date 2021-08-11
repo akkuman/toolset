@@ -1,0 +1,3 @@
+data/shellcode_loader/windows_amd64/*.exe
+.git
+toolset
