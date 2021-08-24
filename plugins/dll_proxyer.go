@@ -126,6 +126,7 @@ func (p *DllProxyer) Run() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer os.RemoveAll(tmpDir)
 	err = utils.CopyDir(p.GetPluginDataPath(), tmpDir)
 	if err != nil {
 		return nil, err
