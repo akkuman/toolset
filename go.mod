@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
+	github.com/fcharlie/buna v0.4.4
 	github.com/gin-gonic/gin v1.7.3
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/spec v0.20.3 // indirect

