@@ -8,6 +8,6 @@ type DllProxyer struct {
 	X64 bool `json:"x64" binding:"required" example:"false"`
 	// DllData the data from base64 encoded dll
 	DllData string `json:"dll_data" binding:"required,base64" example:"MTIzemN4"`
-	// the dll name wich
+	// the filename of origin dll
 	DllName string `json:"dll_name" binding:"required,endswith=.dll" example:"add.dll"`
 }
