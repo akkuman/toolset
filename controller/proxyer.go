@@ -43,7 +43,7 @@ func (c *Controller) DllProxyer(ctx *gin.Context) {
 		return
 	}
 	dllName := filepath.Base(dllProxyer.DllName)
-	tool := plugins.NewDllProxyer(shellcode, dllData, dllProxyer.ReGen, dllName, dllProxyer.X64)
+	tool := plugins.NewDllProxyer(shellcode, dllData, dllName, dllProxyer.X64)
 	data, err := tool.Run()
 	if err != nil {
 		httputil.NewError(ctx, 400, err)

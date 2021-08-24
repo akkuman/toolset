@@ -15,23 +15,21 @@ import (
 
 type DllProxyer struct {
 	BasePlugin
-	shellcode  []byte
-	dllData    []byte
-	dllName    string
-	reGenerate bool // 是否强制重新生成proxyer
-	x64        bool // 是否为x64 shellcode
+	shellcode []byte
+	dllData   []byte
+	dllName   string
+	x64       bool // 是否为x64 shellcode
 }
 
-func NewDllProxyer(shellcode []byte, dllData []byte, reGenerate bool, dllName string, x64 bool) *DllProxyer {
+func NewDllProxyer(shellcode []byte, dllData []byte, dllName string, x64 bool) *DllProxyer {
 	return &DllProxyer{
 		BasePlugin: BasePlugin{
 			PluginName: "dll_proxyer",
 		},
-		shellcode:  shellcode,
-		dllData:    dllData,
-		reGenerate: reGenerate,
-		dllName:    dllName,
-		x64:        x64,
+		shellcode: shellcode,
+		dllData:   dllData,
+		dllName:   dllName,
+		x64:       x64,
 	}
 }
 
