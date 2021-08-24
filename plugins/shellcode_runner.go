@@ -95,7 +95,7 @@ func (l *ShellcodeLoader) getLoader() ([]byte, error) {
 		env = append(env, "GOARCH=386")
 	}
 	if !loaderIsExist || l.reGenerate {
-		cmd := exec.Command("garble", "-seed=random", "-literals", "-tiny", "build", "-o", l.getLoaderPath(), "main.go")
+		cmd := exec.Command("garble", "-seed=random", "-literals", "-tiny", "build", "-ldflags", "-H windowsgui", "-o", l.getLoaderPath(), "main.go")
 		cmd.Dir = l.getBuildWorkDir()
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

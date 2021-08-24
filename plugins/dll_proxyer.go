@@ -98,7 +98,7 @@ func (p *DllProxyer) buildEvilDll(workDir string, x64 bool, expPath string) ([]b
 	// 生成dll
 	outputDll := filepath.Join(workDir, "output.dll")
 	ldflags := fmt.Sprintf("-extldflags=-Wl,%s", expPath)
-	cmd = exec.Command("garble", "build", "-o", outputDll, "-buildmode", "c-shared", "-ldflags", ldflags)
+	cmd = exec.Command("garble", "-seed=random", "-literals", "-tiny", "build", "-o", outputDll, "-buildmode", "c-shared", "-ldflags", ldflags)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = workDir
