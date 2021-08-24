@@ -16,6 +16,16 @@ FROM golang:1.16
 
 WORKDIR /app
 
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i '/security.debian.org/d' /etc/apt/sources.list && \
+    apt update && \
+    apt install -y mingw-w64 && \
+    # Cleaning cache:
+    apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
 ADD data /app/data
 COPY --from=builder /app/toolset /app/
 COPY --from=builder /app/garble /go/bin/

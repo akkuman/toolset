@@ -35,6 +35,7 @@ func main() {
 		loader := v1.Group("/loader")
 		{
 			loader.POST("/shellcode-runner", c.ShellcodeRunner)
+			loader.POST("/dll-proxyer", c.DllProxyer)
 		}
 	}
 
