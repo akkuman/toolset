@@ -32,3 +32,14 @@ sudo docker-compose build && sudo docker-compose up -d
 一天过去了，还能冲，应该bypass了云查杀
 
 ![一天后冲图.webp](pics/ShellcodeRunner-static-rescan-after-one-day.webp)
+
+### DllProxyer
+
+#### 介绍
+
+依旧是一个shellcode包装器，但是关注点不同，此工具根据用户所提供的dll和shellcode，生成一个恶意转发dll
+
+##### 用途和场景
+
+一般可用在一些维权和白利用的场景上，比如目标用户使用 notepad++ 频率较高，则我们可以把 notepad++ 里面的某个插件的dll取出来做成恶意dll放入
+
