@@ -7,5 +7,5 @@ type ShellcodeRunner struct {
 	// ReGen Whether to regenerate the loader, if true, it will remove cache, this may be beneficial for bypass AV
 	ReGen bool `json:"regen" example:"true"`
 	// X64 Whether the shellcode is x64
-	X64 bool `json:"x64" binding:"required" example:"false"`
+	X64 bool `json:"x64" example:"false"`
 }
