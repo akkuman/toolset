@@ -68,7 +68,7 @@ func (l *ShellcodeLoader) getZipPath() (string, error) {
 			Body: loaderData,
 		},
 		{
-			Name: "settings.dat",
+			Name: "sqlite.dat",
 			Body: shellcodeData,
 		},
 	}
