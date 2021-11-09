@@ -113,7 +113,7 @@ func (p *DllHijackVscode) Run() ([]byte, error) {
 	// defer os.RemoveAll(tmpDir)
 	// 更新def文件
 	defPath := filepath.Join(tmpDir, "functions.def")
-	err = p.updateDefFile(defPath, p.getExports())
+	err = p.updateDefFile(defPath, p.getExports(), "vcruntime140")
 	if err != nil {
 		return nil, err
 	}
