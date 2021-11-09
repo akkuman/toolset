@@ -36,6 +36,8 @@ func main() {
 		{
 			loader.POST("/shellcode-runner", c.ShellcodeRunner)
 			loader.POST("/dll-proxyer", c.DllProxyer)
+			loader.GET("/dll-hijack/config", c.DllHijackConfig)
+			loader.POST("/dll-hijack", c.DllHijack)
 		}
 	}
 
