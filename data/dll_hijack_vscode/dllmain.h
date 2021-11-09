@@ -1,6 +1,7 @@
 #include <windows.h>
 
 void test();
+void WINAPI func_wrapper() {};
 
 BOOL WINAPI DllMain(
     HINSTANCE _hinstDLL,  // handle to DLL module
@@ -23,5 +24,3 @@ BOOL WINAPI DllMain(
     }
     return TRUE; // Successful.
 }
-
-void WINAPI func_wrapper() {};

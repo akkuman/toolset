@@ -106,7 +106,7 @@ func (p *DllProxyer) Run() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(tmpDir)
+	// defer os.RemoveAll(tmpDir)
 	// 新建def文件
 	defPath := filepath.Join(tmpDir, "functions.def")
 	err = ioutil.WriteFile(defPath, []byte(defContent), 0777)

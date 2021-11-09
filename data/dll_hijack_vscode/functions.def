@@ -1,5 +1,4 @@
-LIBRARY
+LIBRARY {{ DllName }}.dll
 EXPORTS
-{{ range . }}
-{{ . }}=func_wrapper
+{{ range .Exports }}{{ . }}=func_wrapper
 {{ end }}
