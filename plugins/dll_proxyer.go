@@ -54,26 +54,6 @@ func (p *DllProxyer) genDefContent(exportList []pe.ExportedSymbol, oriDllName st
 	return text
 }
 
-// getDlltoolPath 获取系统中 dlltool 的路径
-func (p *DllProxyer) getDlltoolPath(x64 bool) string {
-	name := "i686-w64-mingw32"
-	if x64 {
-		name = "x86_64-w64-mingw32"
-	}
-	return fmt.Sprintf("/usr/%s/bin/dlltool", name)
-}
-
-// defToExp 将 def 文件转为 exp 文件
-func (p *DllProxyer) defToExp(x64 bool, defPath, expPath string) error {
-	dlltoolPath := p.getDlltoolPath(x64)
-	cmd := exec.Command(dlltoolPath, "--input-def", defPath, "--output-exp", expPath)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Env = os.Environ()
-	err := cmd.Run()
-	return err
-}
-
 func (p *DllProxyer) buildEvilDll(workDir string, x64 bool, expPath string) ([]byte, error) {
 	env := os.Environ()
 	env = append(env, "GOOS=windows")
@@ -122,15 +102,11 @@ func (p *DllProxyer) Run() ([]byte, error) {
 	originDllName := "_" + p.dllName
 	defContent := p.genDefContent(exports, strings.TrimSuffix(originDllName, ".dll"))
 	// 新建一个临时目录作为工作目录，并把所有的所需的基础文件拷贝过去
-	tmpDir, err := ioutil.TempDir("", "dll-proxyer-*")
+	tmpDir, err := p.buildTmpWorkDir()
 	if err != nil {
 		return nil, err
 	}
 	defer os.RemoveAll(tmpDir)
-	err = utils.CopyDir(p.GetPluginDataPath(), tmpDir)
-	if err != nil {
-		return nil, err
-	}
 	// 新建def文件
 	defPath := filepath.Join(tmpDir, "functions.def")
 	err = ioutil.WriteFile(defPath, []byte(defContent), 0777)
