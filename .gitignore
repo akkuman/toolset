@@ -1,2 +1,2 @@
-data/**/*.exe
 toolset
+data/shellcode_runner/windows_amd64/main.exe
