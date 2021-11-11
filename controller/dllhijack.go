@@ -50,7 +50,6 @@ func (c *Controller) DllHijack(ctx *gin.Context) {
 	hijackType := dllHijack.Type
 	for _, h := range plugins.DllHijackConfig() {
 		if h.Type == hijackType {
-			h.Runner.Init()
 			h.Runner.SetShellcdoe(shellcode)
 			data, err := h.Runner.Run()
 			if err != nil {

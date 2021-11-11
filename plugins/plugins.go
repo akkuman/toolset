@@ -14,7 +14,6 @@ type BasePlugin struct {
 }
 
 type RunnerIface interface {
-	Init()
 	SetShellcdoe([]byte)
 	Run() ([]byte, error)
 }
