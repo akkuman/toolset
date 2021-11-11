@@ -1,6 +1,8 @@
 package plugins
 
+// PreloadDllHijackVscode 位于 vscode 安装目录的 tools/inno_updater.exe
 type PreloadDllHijackVscode struct {
+	SubPluginPreloadDllHijackX86
 }
 
 func (p *PreloadDllHijackVscode) GetMainProgramName() (string) {
@@ -12,7 +14,7 @@ func (p *PreloadDllHijackVscode) GetDllName() (string) {
 }
 
 func (p *PreloadDllHijackVscode) GetPluginName() (string) {
-	return "dll_hijack_vscode"
+	return "preload_dll_hijack_vscode"
 }
 
 func (p *PreloadDllHijackVscode) GetIsX64Arch() (bool) {

@@ -26,6 +26,13 @@ func DllHijackConfig() ([]DllHijackOptionItem) {
 	}
 }
 
+// SubPluginPreloadDllHijackX86 给子组件提供编译dll的基础文件
+type SubPluginPreloadDllHijackX86 struct {}
+
+func (p *SubPluginPreloadDllHijackX86) GetFoundationPath(pluginRootPath string) string {
+	return filepath.Join(pluginRootPath, "preload_dll_hijack_x86")
+}
+
 // PreloadDllHijackBase preload dll劫持插件基础抽象模块
 type PreloadDllHijackBase struct {
 	BasePlugin
@@ -35,6 +42,7 @@ type PreloadDllHijackBase struct {
 
 // SubPluginPreloadDllHijackIface 作为 PreloadDllHijackBase 的子组件来提供信息，使之成为一个完整的插件
 type SubPluginPreloadDllHijackIface interface {
+	GetFoundationPath(pluginRootPath string) string
 	GetMainProgramName() string
 	GetDllName() string
 	GetPluginName() string
@@ -118,6 +126,10 @@ func updateMainGoFile(tag []byte, xorkey []byte, mainProgramName string, mainGoF
 func (p *PreloadDllHijackBase) Run() ([]byte, error) {
 	// 新建一个临时目录作为工作目录，并把所有的所需的基础文件拷贝过去
 	tmpDir, err := p.buildTmpWorkDir()
+	if err != nil {
+		return nil, err
+	}
+	err = utils.CopyDir(p.subplugin.GetFoundationPath(p.GetRootPath()), tmpDir)
 	if err != nil {
 		return nil, err
 	}

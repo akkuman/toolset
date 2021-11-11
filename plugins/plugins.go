@@ -18,8 +18,12 @@ type RunnerIface interface {
 	Run() ([]byte, error)
 }
 
+func (p *BasePlugin) GetRootPath() string {
+	return filepath.Join(utils.GetExecutableDir(), "data")
+}
+
 func (p *BasePlugin) GetPluginDataPath() string {
-	return filepath.Join(utils.GetExecutableDir(), "data", p.PluginName)
+	return filepath.Join(p.GetRootPath(), p.PluginName)
 }
 
 // getDlltoolPath 获取系统中 dlltool 的路径
