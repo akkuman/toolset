@@ -17,10 +17,6 @@ func (p *PreloadDllHijackVscode) GetPluginName() (string) {
 	return "preload_dll_hijack_vscode"
 }
 
-func (p *PreloadDllHijackVscode) GetIsX64Arch() (bool) {
-	return false
-}
-
 func (p *PreloadDllHijackVscode) GetDllExports() []string {
 	return []string{
 		"_except_handler4_common",

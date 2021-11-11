@@ -33,6 +33,10 @@ func (p *SubPluginPreloadDllHijackX86) GetFoundationPath(pluginRootPath string) 
 	return filepath.Join(pluginRootPath, "preload_dll_hijack_x86")
 }
 
+func (p *SubPluginPreloadDllHijackX86) GetIsX64Arch() (bool) {
+	return false
+}
+
 // PreloadDllHijackBase preload dll劫持插件基础抽象模块
 type PreloadDllHijackBase struct {
 	BasePlugin
