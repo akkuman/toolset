@@ -9,6 +9,7 @@ RUN go env -w GO111MODULE=on && \
 COPY ./go.mod ./go.sum /src/
 RUN go get -u github.com/swaggo/swag/cmd/swag && go mod download
 ADD . /src/
+RUN rm -rf /src/data
 RUN swag init && go mod tidy && go build -o /app/toolset . && cp /go/bin/garble /app/garble
 
 
