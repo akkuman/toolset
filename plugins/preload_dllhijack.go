@@ -43,6 +43,11 @@ func DllHijackConfig() ([]DllHijackOptionItem) {
 			Name: "(x86) 迅雷",
 			Runner: NewPreloadDllHijackBase(new(PreloadDllHijackThunder)),
 		},
+		{
+			Type: 6,
+			Name: "(x86) PowerPoint 2007",
+			Runner: NewPreloadDllHijackBase(new(PreloadDllHijackPowerPoint2007)),
+		},
 	}
 }
 
