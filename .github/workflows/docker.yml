@@ -41,6 +41,20 @@ jobs:
           cache-to: |
             type=gha,scope=downloader
           target: downloader
+      - 
+        name: Build builder image
+        id: docker_build_builder
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: false
+          cache-from: |
+            type=gha,scope=builder
+          cache-to: |
+            type=gha,scope=builder
+          target: builder
       -
         name: Build and push
         id: docker_build
@@ -55,5 +69,6 @@ jobs:
           cache-from: |
             type=gha,scope=finally
             type=gha,scope=downloader
+            type=gha,scope=builder
           cache-to: type=gha,scope=finally
           target: finally

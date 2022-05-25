@@ -22,7 +22,7 @@ RUN rm -rf /src/data
 RUN swag init && go build -o /app/toolset . && cp /go/bin/garble /app/garble
 
 
-FROM golang:1.16
+FROM golang:1.16 AS finally
 
 WORKDIR /app
 
