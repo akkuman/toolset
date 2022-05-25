@@ -1,3 +1,12 @@
+FROM alpine/curl AS downloader
+
+WORKDIR /app
+RUN curl -s -o supervisord.tar.gz https://ghproxy.com/https://github.com/ochinchina/supervisord/releases/download/v0.7.3/supervisord_0.7.3_Linux_64-bit.tar.gz && \
+    tar -zxvf supervisord.tar.gz -C . && \
+    mv /app/supervisord_0.7.3_Linux_64-bit/supervisord_static /app/supervisord
+
+
+
 FROM golang:1.16 as builder
 
 WORKDIR /src
@@ -27,7 +36,12 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
     # Cleaning cache:
     apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
+COPY --from=downloader /app/supervisord /app/supervisord
 ADD data /app/data
 COPY --from=builder /app/toolset /app/
 COPY --from=builder /app/garble /go/bin/
-CMD ["/app/toolset"]
+
+COPY supervisord.conf /app/
+
+EXPOSE 8080 9001
+CMD ["/app/supervisord", "-c", "/app/supervisord.conf"]
