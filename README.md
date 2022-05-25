@@ -7,9 +7,8 @@
 ## 安装
 
 ```shell
-git clone $repo_url
-
-sudo docker-compose build && sudo docker-compose up -d
+curl -o docker-compose.yml https://raw.githubusercontent.com/akkuman/toolset/master/docker-compose.yml
+sudo docker-compose pull && sudo docker-compose up -d
 ```
 
 访问 `http://127.0.0.1:8080/swagger/index.html` 即可查看接口文档
