@@ -13,7 +13,7 @@ WORKDIR /src
 
 RUN go env -w GO111MODULE=on && \
     go env -w GOPROXY=https://goproxy.cn,direct && \
-    go install mvdan.cc/garble@0.7.0
+    go install mvdan.cc/garble@latest
 
 COPY ./go.mod ./go.sum /src/
 RUN go get -u github.com/swaggo/swag/cmd/swag && go mod download
