@@ -7,13 +7,13 @@ RUN curl -s -o supervisord.tar.gz https://ghproxy.com/https://github.com/ochinch
 
 
 
-FROM golang:1.16 as builder
+FROM golang:1.18 as builder
 
 WORKDIR /src
 
 RUN go env -w GO111MODULE=on && \
     go env -w GOPROXY=https://goproxy.cn,direct && \
-    GO111MODULE=on go get mvdan.cc/garble
+    go install mvdan.cc/garble@0.7.0
 
 COPY ./go.mod ./go.sum /src/
 RUN go get -u github.com/swaggo/swag/cmd/swag && go mod download
@@ -22,7 +22,7 @@ RUN rm -rf /src/data
 RUN swag init && go build -o /app/toolset . && cp /go/bin/garble /app/garble
 
 
-FROM golang:1.16 AS finally
+FROM golang:1.18 AS finally
 
 WORKDIR /app
 
