@@ -16,7 +16,10 @@ RUN go env -w GO111MODULE=on && \
     go install mvdan.cc/garble@latest
 
 COPY ./go.mod ./go.sum /src/
-RUN go get -u github.com/swaggo/swag/cmd/swag && go mod download
+RUN curl -o swag_1.8.3_Linux_x86_64.tar.gz https://github.com/swaggo/swag/releases/download/v1.8.3/swag_1.8.3_Linux_x86_64.tar.gz && \
+    tar zxvf swag_1.8.3_Linux_x86_64.tar.gz && \
+    mv swag /go/bin/
+RUN go mod download
 ADD . /src/
 RUN rm -rf /src/data
 RUN swag init && go build -o /app/toolset . && cp /go/bin/garble /app/garble
